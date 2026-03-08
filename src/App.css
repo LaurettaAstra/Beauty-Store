@@ -242,6 +242,17 @@ a {
   font-size: 16px;
 }
 
+.auth-input-error {
+  border-color: #ef4444;
+}
+
+.auth-error {
+  margin: -8px 0 8px;
+  color: #ef4444;
+  font-size: 14px;
+  text-align: left;
+}
+
 .auth-button {
   width: 260px;
   margin: 10px auto 0;

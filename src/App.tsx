@@ -1,9 +1,12 @@
 import { Routes, Route } from "react-router-dom"
 import { useState } from "react"
+import "./App.css"
+
 import Header from "./components/Header"
 import ProductCard from "./components/ProductCard"
-import ProductPage from "./pages/ProductPage"
 import LoginPage from "./pages/LoginPage"
+import CodePage from "./pages/CodePage"
+import ProductPage from "./pages/ProductPage"
 import { products, type Product } from "./data/products"
 
 function App() {
@@ -11,6 +14,7 @@ function App() {
 
   const addToCart = (product: Product, quantity: number = 1) => {
     setCartCount((prev) => prev + quantity)
+    console.log("Добавлен товар:", product, quantity)
   }
 
   return (
@@ -41,13 +45,12 @@ function App() {
             </main>
           }
         />
-
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/code" element={<CodePage />} />
         <Route
           path="/product/:id"
           element={<ProductPage addToCart={addToCart} />}
         />
-
-        <Route path="/login" element={<LoginPage />} />
       </Routes>
     </div>
   )
