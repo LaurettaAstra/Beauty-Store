@@ -76,6 +76,9 @@ a {
   border-radius: 20px;
   padding: 16px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .product-link {
@@ -143,6 +146,15 @@ a {
 .add-button-wide {
   width: 260px;
   margin: 0 auto;
+}
+
+button {
+  transition: transform 0.1s ease;
+  user-select: none;
+}
+
+button:active {
+  transform: scale(0.97);
 }
 
 .back-link {

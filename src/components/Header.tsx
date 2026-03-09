@@ -1,10 +1,13 @@
-import { Link } from "react-router-dom"
+import { Link, useLocation } from "react-router-dom"
 
 type HeaderProps = {
   cartCount: number
 }
 
 function Header({ cartCount }: HeaderProps) {
+  useLocation()
+  const isLoggedIn = !!localStorage.getItem("name") && !!localStorage.getItem("phone")
+
   return (
     <header className="header">
       <Link to="/" className="logo">
@@ -18,10 +21,10 @@ function Header({ cartCount }: HeaderProps) {
       />
 
       <div className="header-icons">
-        <Link to="/login">👤</Link>
-        <span>
+        <Link to={isLoggedIn ? "/profile" : "/login"}>👤</Link>
+        <Link to="/cart" style={{ textDecoration: "none" }}>
           🛒 {cartCount > 0 && <span className="cart-count">{cartCount}</span>}
-        </span>
+        </Link>
       </div>
     </header>
   )
