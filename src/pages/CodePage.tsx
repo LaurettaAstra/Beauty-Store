@@ -1,75 +1,123 @@
 import { useEffect, useState } from "react"
-import { Link } from "react-router-dom"
+import { Link, useLocation, useNavigate } from "react-router-dom"
 
 function CodePage() {
-const [code, setCode] = useState("")
-const [seconds, setSeconds] = useState(30)
+  const location = useLocation()
+  const navigate = useNavigate()
+  const { name, phone } = (location.state as { name?: string; phone?: string }) || {}
 
-useEffect(() => {
-if (seconds <= 0) return
+  const [code, setCode] = useState("")
+  const [codeError, setCodeError] = useState("")
+  const [seconds, setSeconds] = useState(30)
 
-const timer = setTimeout(() => {
-  setSeconds(seconds - 1)
-}, 1000)
+  useEffect(() => {
+    if (!phone) {
+      navigate("/login", { replace: true })
+      return
+    }
+  }, [phone, navigate])
 
-return () => clearTimeout(timer)
+  useEffect(() => {
+    if (seconds <= 0) return
 
-}, [seconds])
+    const timer = setTimeout(() => {
+      setSeconds(seconds - 1)
+    }, 1000)
 
-const handleResend = () => {
-setSeconds(30)
-setCode("")
-console.log("Повторная отправка кода")
-}
+    return () => clearTimeout(timer)
+  }, [seconds])
 
-const handleSubmit = (e: React.FormEvent) => {
-e.preventDefault()
-console.log("Введенный код:", code)
-}
+  const handleResend = () => {
+    setSeconds(30)
+    setCode("")
+    setCodeError("")
+    console.log("Повторная отправка кода")
+  }
 
-return (
-<main className="page-container">
-<section className="auth-card">
-<Link to="/login" className="auth-back">
-← Назад
-</Link>
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
 
-    <h1 className="auth-title">
-      Введите код
-    </h1>
+    const digits = code.replace(/\D/g, "")
+    if (digits.length < 4) {
+      setCodeError("Введите корректный код")
+      return
+    }
 
-    <p className="auth-text">
-      Код отправлен на ваш телефон
-    </p>
+    if (digits === "1234") {
+      setCodeError("")
+      if (name !== undefined) localStorage.setItem("name", name)
+      if (phone !== undefined) localStorage.setItem("phone", phone)
+      navigate("/profile")
+      return
+    }
 
-    <form className="auth-form" onSubmit={handleSubmit}>
-      <input
-        type="text"
-        placeholder="Введите код"
-        className="auth-input"
-        value={code}
-        onChange={(e) => setCode(e.target.value)}
-        maxLength={4}
-      />
+    setCodeError("Неверный код")
+  }
 
-      <button type="submit" className="auth-button">
-        Подтвердить
-      </button>
-    </form>
+  if (!phone) {
+    return null
+  }
 
-    {seconds > 0 ? (
-      <p className="auth-text">
-        Повторная отправка через {seconds} сек
-      </p>
-    ) : (
-      <button type="button" className="auth-button" onClick={handleResend}>
-        Отправить код снова
-      </button>
-    )}
-  </section>
-</main>
+  return (
+    <main className="page-container">
+      <section className="auth-card">
+        <Link to="/login" className="auth-back">
+          ← Назад
+        </Link>
 
-)
+        <h1 className="auth-title">Введите код из SMS</h1>
+
+        <p className="auth-text">Код отправлен на номер {phone}</p>
+
+        <form className="auth-form" onSubmit={handleSubmit}>
+          <p className="auth-text">Введите код подтверждения</p>
+          <input
+            type="text"
+            inputMode="numeric"
+            placeholder="Введите код"
+            className={`auth-input ${codeError ? "auth-input-error" : ""}`}
+            value={code}
+            onChange={(e) => {
+              const digits = e.target.value.replace(/\D/g, "").slice(0, 4)
+              setCode(digits)
+              setCodeError("")
+            }}
+            maxLength={4}
+          />
+
+          {codeError && <p className="auth-error">{codeError}</p>}
+
+          <button type="submit" className="auth-button">
+            Подтвердить
+          </button>
+        </form>
+
+        <div style={{ textAlign: "center", marginTop: 12 }}>
+          {seconds > 0 ? (
+            <p className="auth-text" style={{ margin: 0 }}>
+              Отправить код снова через {seconds} сек
+            </p>
+          ) : (
+            <button
+              type="button"
+              onClick={handleResend}
+              style={{
+                background: "none",
+                border: "none",
+                color: "#6b7280",
+                cursor: "pointer",
+                padding: 0,
+                fontSize: 14,
+                textDecoration: "underline",
+              }}
+            >
+              Отправить код снова
+            </button>
+          )}
+        </div>
+      </section>
+    </main>
+  )
 }
 
 export default CodePage

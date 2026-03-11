@@ -8,6 +8,8 @@ export type Product = {
   category: "Уход за лицом" | "Уход за волосами" | "Макияж"
   old_price?: number
   discount_percent?: number
+  is_available?: boolean
+  status?: "out_of_stock" | string
 }
 
 const IMG = {
@@ -28,7 +30,7 @@ export const products: Product[] = [
     title: "Hydra Glow Face Cream",
     price: 3200,
     image: IMG.face,
-    stock: 12,
+    stock: 0,
     description: "Увлажняющий крем для лица с легкой текстурой для ежедневного ухода. Помогает поддерживать комфорт кожи и мягкость в течение дня.",
     category: "Уход за лицом",
   },

@@ -80,10 +80,10 @@ function OrdersPage() {
             }}
           >
             <div style={{ marginBottom: 20 }}>
-              <p style={{ margin: "0 0 4px", fontSize: 14, color: "#6b7280" }}>
+              <p style={{ margin: "0 0 4px", fontSize: 14, color: "#166534" }}>
                 Заказ #{order.order_id}
               </p>
-              <p style={{ margin: "0 0 4px", fontSize: 14, color: "#6b7280" }}>
+              <p style={{ margin: "0 0 4px", fontSize: 14, color: "#166534" }}>
                 {new Date(order.created_at).toLocaleDateString("ru-RU")}
               </p>
               <p style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>

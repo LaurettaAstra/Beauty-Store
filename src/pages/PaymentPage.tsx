@@ -1,6 +1,7 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useParams, useNavigate, Link } from "react-router-dom"
 import { ORDERS_KEY, type Order, type OrderItem } from "./OrdersPage"
+import { getUsersMe, patchUsersMe } from "../api/users"
 
 export type PaymentMethodId = "bank_card" | "sbp"
 
@@ -9,8 +10,11 @@ const PAYMENT_METHODS: { id: PaymentMethodId; label: string; description: string
   { id: "sbp", label: "СБП", description: "Быстрая оплата через банковское приложение" },
 ]
 
-const STORAGE_NAME = "name"
-const STORAGE_PHONE = "phone"
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+function isValidEmailFormat(email: string): boolean {
+  return EMAIL_REGEX.test(email.trim())
+}
 
 async function submitPayment(orderId: string, paymentMethod: PaymentMethodId): Promise<void> {
   const payload = { order_id: orderId, payment_method: paymentMethod }
@@ -45,6 +49,11 @@ function PaymentPage() {
   const { orderId } = useParams<"orderId">()
   const navigate = useNavigate()
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethodId>("bank_card")
+  const [name, setName] = useState<string | null>(null)
+  const [phone, setPhone] = useState<string | null>(null)
+  const [profileEmail, setProfileEmail] = useState<string>("")
+  const [email, setEmail] = useState<string>("")
+  const [emailError, setEmailError] = useState<string | null>(null)
 
   const order: Order | null = (() => {
     if (!orderId) return null
@@ -56,13 +65,45 @@ function PaymentPage() {
     }
   })()
 
-  const name = typeof window !== "undefined" ? localStorage.getItem(STORAGE_NAME) : null
-  const phone = typeof window !== "undefined" ? localStorage.getItem(STORAGE_PHONE) : null
+  useEffect(() => {
+    getUsersMe().then((user) => {
+      if (user) {
+        setName(user.profile.name)
+        setPhone(user.phone)
+        const profileEmailVal = user.profile.email ?? ""
+        setProfileEmail(profileEmailVal)
+        setEmail((prev) => (prev === "" ? profileEmailVal : prev))
+      }
+    })
+  }, [])
 
-  const handlePay = () => {
+  const handlePay = async () => {
     if (!order) return
-    submitPayment(order.order_id, selectedMethod)
-    navigate("/orders")
+
+    setEmailError(null)
+    const trimmedEmail = email.trim()
+
+    if (!trimmedEmail) {
+      setEmailError("Введите e-mail")
+      return
+    }
+
+    if (!isValidEmailFormat(trimmedEmail)) {
+      setEmailError("Введите корректный e-mail")
+      return
+    }
+
+    try {
+      await submitPayment(order.order_id, selectedMethod)
+
+      if (trimmedEmail !== profileEmail) {
+        await patchUsersMe({ email: trimmedEmail })
+      }
+
+      navigate("/orders")
+    } catch {
+      return
+    }
   }
 
   if (!order) {
@@ -102,9 +143,33 @@ function PaymentPage() {
           <div style={{ ...cardStyle }}>
             <h2 style={{ margin: "0 0 16px", fontSize: 18, fontWeight: 600 }}>Контактные данные</h2>
             {name && <p style={{ margin: "0 0 8px", fontSize: 15 }}>{name}</p>}
-            {phone && <p style={{ margin: 0, fontSize: 15, color: "#6b7280" }}>{phone}</p>}
+            {phone && <p style={{ margin: "0 0 16px", fontSize: 15, color: "#6b7280" }}>{phone}</p>}
             {!name && !phone && (
-              <p style={{ margin: 0, fontSize: 14, color: "#6b7280" }}>Данные не указаны</p>
+              <p style={{ margin: "0 0 16px", fontSize: 14, color: "#6b7280" }}>Данные не указаны</p>
+            )}
+            <label style={{ display: "block", marginBottom: 8, fontSize: 15, color: "#6b7280" }}>
+              Email
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value)
+                setEmailError(null)
+              }}
+              placeholder="email@example.com"
+              style={{
+                width: "100%",
+                padding: "12px 14px",
+                borderRadius: 12,
+                border: emailError ? "1px solid #ef4444" : "1px solid #e5e7eb",
+                fontSize: 16,
+                marginBottom: 4,
+                boxSizing: "border-box",
+              }}
+            />
+            {emailError && (
+              <p style={{ margin: "0 0 16px", color: "#ef4444", fontSize: 14 }}>{emailError}</p>
             )}
           </div>
 

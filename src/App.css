@@ -1,3 +1,11 @@
+:root {
+  --color-primary: #111827;
+  --color-primary-medium: #1e40af;
+  --color-bg: #f7f7fb;
+  --color-border: #d1d5db;
+  --color-muted: #6b7280;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -5,8 +13,8 @@
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  background: #f7f7fb;
-  color: #111827;
+  background: var(--color-bg);
+  color: var(--color-primary);
 }
 
 a {
@@ -39,7 +47,7 @@ a {
   min-width: 260px;
   max-width: 420px;
   padding: 12px 16px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--color-border);
   border-radius: 14px;
   font-size: 15px;
   background: white;
@@ -105,7 +113,7 @@ a {
 }
 
 .product-stock {
-  color: #6b7280;
+  color: var(--color-muted);
   margin: 0 0 14px;
 }
 
@@ -119,7 +127,7 @@ a {
 .small-button {
   width: 34px;
   height: 34px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--color-border);
   background: white;
   border-radius: 10px;
   cursor: pointer;
@@ -137,7 +145,7 @@ a {
   border: none;
   border-radius: 14px;
   padding: 14px 18px;
-  background: #111827;
+  background: var(--color-primary-medium);
   color: white;
   font-size: 15px;
   cursor: pointer;
@@ -190,13 +198,13 @@ button:active {
 }
 
 .product-page-stock {
-  color: #6b7280;
+  color: var(--color-muted);
   margin: 0 0 20px;
 }
 
 .product-page-description {
   line-height: 1.6;
-  color: #374151;
+  color: var(--color-primary);
   margin: 0 0 24px;
 }
 
@@ -250,7 +258,7 @@ button:active {
 .auth-input {
   padding: 14px;
   border-radius: 12px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--color-border);
   font-size: 16px;
 }
 
@@ -271,7 +279,7 @@ button:active {
   border: none;
   border-radius: 14px;
   padding: 14px 18px;
-  background: #111827;
+  background: var(--color-primary-medium);
   color: white;
   font-size: 15px;
   cursor: pointer;

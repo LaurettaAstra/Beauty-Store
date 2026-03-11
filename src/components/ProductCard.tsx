@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { useState } from "react"
 import type { Product } from "../data/products"
 
@@ -8,11 +8,13 @@ const FALLBACK_IMAGE =
 type ProductCardProps = {
   product: Product
   addToCart: (product: Product, quantity?: number) => void
+  isInCart?: boolean
   isFavorite?: boolean
   onToggleFavorite?: () => void
 }
 
-function ProductCard({ product, addToCart, isFavorite = false, onToggleFavorite }: ProductCardProps) {
+function ProductCard({ product, addToCart, isInCart = false, isFavorite = false, onToggleFavorite }: ProductCardProps) {
+  const navigate = useNavigate()
   const [quantity, setQuantity] = useState(1)
 
   const increase = () => {
@@ -98,10 +100,22 @@ function ProductCard({ product, addToCart, isFavorite = false, onToggleFavorite 
       <button
         type="button"
         className="add-button"
-        onClick={() => addToCart(product, quantity)}
-        style={{ marginTop: "auto" }}
+        onClick={() => {
+          if (isInCart) {
+            navigate("/cart")
+          } else {
+            addToCart(product, quantity)
+          }
+        }}
+        style={{
+          marginTop: "auto",
+          ...(isInCart && {
+            background: "#22c55e",
+            color: "white",
+          }),
+        }}
       >
-        Добавить в корзину
+        {isInCart ? "В корзине" : "Добавить в корзину"}
       </button>
     </article>
   )

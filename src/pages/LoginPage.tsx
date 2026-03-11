@@ -45,7 +45,7 @@ function LoginPage() {
     }
 
     console.log("Отправка номера:", phone)
-    navigate("/code")
+    navigate("/code", { state: { name, phone } })
   }
 
   return (

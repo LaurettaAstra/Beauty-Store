@@ -1,20 +1,24 @@
-import { Link, useParams } from "react-router-dom"
+import { Link, useParams, useNavigate } from "react-router-dom"
 import { useState } from "react"
 import { products, type Product } from "../data/products"
+import type { CartItem } from "./CartPage"
 
 const FALLBACK_IMAGE =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='400'%3E%3Crect fill='%23e5e7eb' width='800' height='400'/%3E%3Ctext x='50%25' y='50%25' fill='%236b7280' text-anchor='middle' dy='.3em' font-size='24'%3ENo Image%3C/text%3E%3C/svg%3E"
 
 type ProductPageProps = {
   addToCart: (product: Product, quantity?: number) => void
+  cart: CartItem[]
   favoriteIds: number[]
   onToggleFavorite: (productId: number) => void
 }
 
-function ProductPage({ addToCart, favoriteIds, onToggleFavorite }: ProductPageProps) {
+function ProductPage({ addToCart, cart, favoriteIds, onToggleFavorite }: ProductPageProps) {
   const { id } = useParams()
+  const navigate = useNavigate()
   const product = products.find((p) => p.id === Number(id))
   const [quantity, setQuantity] = useState(1)
+  const isInCart = product ? cart.some((i) => i.productId === product.id) : false
 
   if (!product) {
     return <div className="page-container">Товар не найден</div>
@@ -108,9 +112,20 @@ function ProductPage({ addToCart, favoriteIds, onToggleFavorite }: ProductPagePr
           <button
             type="button"
             className="add-button add-button-wide"
-            onClick={() => addToCart(product, quantity)}
+            onClick={() => {
+              if (isInCart) {
+                navigate("/cart")
+              } else {
+                addToCart(product, quantity)
+              }
+            }}
+            style={
+              isInCart
+                ? { background: "#22c55e", color: "white" }
+                : undefined
+            }
           >
-            Добавить в корзину
+            {isInCart ? "В корзине" : "Добавить в корзину"}
           </button>
         </div>
       </section>

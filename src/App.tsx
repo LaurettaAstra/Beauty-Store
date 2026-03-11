@@ -12,18 +12,26 @@ import CartPage, { type CartItem } from "./pages/CartPage"
 import OrdersPage from "./pages/OrdersPage"
 import PaymentPage from "./pages/PaymentPage"
 import { products, type Product } from "./data/products"
+import { getCart, postCartItems } from "./api/cart"
 
 const FAVORITES_KEY = "favorites"
 const CART_KEY = "cart"
 
 function App() {
-  const [cart, setCart] = useState<CartItem[]>(() => {
-    try {
-      return JSON.parse(localStorage.getItem(CART_KEY) || "[]")
-    } catch {
-      return []
-    }
-  })
+  const [cart, setCart] = useState<CartItem[]>([])
+  const [cartLoaded, setCartLoaded] = useState(false)
+
+  useEffect(() => {
+    getCart().then((items) => {
+      const cartItems: CartItem[] = items.map((i) => ({
+        productId: i.product_id,
+        quantity: i.quantity,
+        selected: true,
+      }))
+      setCart(cartItems)
+      setCartLoaded(true)
+    })
+  }, [])
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0)
 
   const [favoriteIds, setFavoriteIds] = useState<number[]>(() => {
@@ -39,25 +47,40 @@ function App() {
   }, [favoriteIds])
 
   useEffect(() => {
-    localStorage.setItem(CART_KEY, JSON.stringify(cart))
-  }, [cart])
+    if (cartLoaded) {
+      localStorage.setItem(CART_KEY, JSON.stringify(cart))
+    }
+  }, [cart, cartLoaded])
 
-  const addToCart = (product: Product, quantity: number = 1) => {
-    setCart((prev) => {
-      const existing = prev.find((i) => i.productId === product.id)
-      if (existing) {
-        return prev.map((i) =>
-          i.productId === product.id
-            ? { ...i, quantity: Math.min(product.stock, i.quantity + quantity) }
-            : i
-        )
-      }
-      return [...prev, { productId: product.id, quantity: Math.min(product.stock, quantity) }]
-    })
+  const addToCart = async (product: Product, quantity: number = 1) => {
+    try {
+      await postCartItems(product.id, quantity)
+      setCart((prev) => {
+        const existing = prev.find((i) => i.productId === product.id)
+        if (existing) {
+          return prev.map((i) =>
+            i.productId === product.id
+              ? { ...i, quantity: Math.min(product.stock, i.quantity + quantity) }
+              : i
+          )
+        }
+        return [...prev, { productId: product.id, quantity: Math.min(product.stock, quantity), selected: true }]
+      })
+    } catch {
+      return
+    }
   }
 
   const removeFromCart = (productId: number) => {
     setCart((prev) => prev.filter((i) => i.productId !== productId))
+  }
+
+  const toggleCartItemSelection = (productId: number) => {
+    setCart((prev) =>
+      prev.map((i) =>
+        i.productId === productId ? { ...i, selected: i.selected === false ? true : false } : i
+      )
+    )
   }
 
   const updateCartQuantity = (productId: number, quantity: number) => {
@@ -108,6 +131,7 @@ function App() {
                     key={product.id}
                     product={product}
                     addToCart={addToCart}
+                    isInCart={cart.some((i) => i.productId === product.id)}
                     isFavorite={favoriteIds.includes(product.id)}
                     onToggleFavorite={() => toggleFavorite(product.id)}
                   />
@@ -120,7 +144,7 @@ function App() {
         <Route path="/code" element={<CodePage />} />
         <Route path="/orders" element={<OrdersPage />} />
         <Route path="/payment/:orderId" element={<PaymentPage />} />
-        <Route path="/profile" element={<ProfilePage favoriteIds={favoriteIds} onToggleFavorite={toggleFavorite} />} />
+        <Route path="/profile" element={<ProfilePage cart={cart} addToCart={addToCart} favoriteIds={favoriteIds} onToggleFavorite={toggleFavorite} />} />
         <Route
           path="/cart"
           element={
@@ -128,6 +152,7 @@ function App() {
               cart={cart}
               removeFromCart={removeFromCart}
               updateCartQuantity={updateCartQuantity}
+              toggleCartItemSelection={toggleCartItemSelection}
               favoriteIds={favoriteIds}
               onToggleFavorite={toggleFavorite}
               onCreateOrder={() => clearCart()}
@@ -139,6 +164,7 @@ function App() {
           element={
             <ProductPage
               addToCart={addToCart}
+              cart={cart}
               favoriteIds={favoriteIds}
               onToggleFavorite={toggleFavorite}
             />
