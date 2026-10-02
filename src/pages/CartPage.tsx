@@ -92,9 +92,9 @@ function CartPage({
       status: "created",
       payment_status: "not_paid",
       items,
-      total_amount,
-      discount_amount,
-      final_amount,
+      total_amount: products_total,
+      discount_amount: discount_total,
+      final_amount: final_total,
     }
     const existing = JSON.parse(localStorage.getItem(ORDERS_KEY) || "[]")
     localStorage.setItem(ORDERS_KEY, JSON.stringify([...existing, order]))
